@@ -1,0 +1,47 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  release:
+    strategy:
+      matrix:
+        go-version:
+          - 1.15.x
+        goos:
+          - linux
+          - darwin
+        goarch:
+          - amd64
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go-version }}
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Tag name
+        id: tag_name
+        run: |
+          echo ::set-output name=SOURCE_TAG::${GITHUB_REF#refs/tags/}
+
+      - name: Build
+        run: |
+          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -ldflags '-extldflags "-static" -X github.com/laszlocph/woodpecker/version.Version=${{ steps.tag_name.outputs.SOURCE_TAG }}' -o release/woodpecker-server github.com/laszlocph/woodpecker/cmd/drone-server
+          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -ldflags '-extldflags "-static" -X github.com/laszlocph/woodpecker/version.Version=${{ steps.tag_name.outputs.SOURCE_TAG }}' -o release/woodpecker-agent github.com/laszlocph/woodpecker/cmd/drone-agent
+          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -ldflags '-extldflags "-static" -X main.version=${{ steps.tag_name.outputs.SOURCE_TAG }}' -o release/woodpecker ./cli/drone
+          tar -zcvf woodpecker_${{ steps.tag_name.outputs.SOURCE_TAG }}_${{ matrix.goos }}_${{ matrix.goarch }}.tar.gz release/*
+
+      - name: Release
+        uses: fnkr/github-action-ghr@v1
+        env:
+          GHR_PATH: ./woodpecker_${{ steps.tag_name.outputs.SOURCE_TAG }}_${{ matrix.goos }}_${{ matrix.goarch }}.tar.gz
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
