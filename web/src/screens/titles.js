@@ -7,7 +7,7 @@ import Title from "react-title-component";
 export default function() {
   return (
     <Switch>
-      <Route path="/account/tokens" exact={true} component={accountTitle} />
+      <Route path="/account/token" exact={true} component={accountTitle} />
       <Route path="/account/repos" exact={true} component={accountRepos} />
       <Route path="/account/global-secrets" exact={true} component={accountGlobalSecrets} />
       <Route path="/login" exact={false} component={loginTitle} />
