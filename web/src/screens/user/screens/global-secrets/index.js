@@ -9,9 +9,9 @@ import {
 import { branch } from "baobab-react/higher-order";
 import { inject } from "config/client/inject";
 
-import { List, Item, Form } from "./components";
+import { List, Item, Form } from "screens/repo/screens/secrets/components";
 
-import styles from "./index.less";
+import styles from "screens/repo/screens/secrets/index.less";
 
 const binding = (props, context) => {
   return {
